@@ -236,8 +236,9 @@ def system_pick(name):
     # a result row carries a "Preview the file <name>" button; the search box and the
     # suggestion list show the same text, so tap the name on the row of that button
     prev = find(lambda n: n.desc == "Preview the file " + name, 15, "search result " + name)
-    rows = [n for n in dump() if n.text == name and not n.cls.endswith("EditText") and abs(n.cy - prev.cy) < 150]
-    tap(rows[0] if rows else prev)
+    # tapping the thumbnail previews (opens the file in a viewer app); tap the row's middle to pick it
+    w = int(re.search(r"(\d+)x(\d+)", sh("wm size")).group(1))
+    tap(int(w * 0.6), prev.cy)
 
 
 def export(fmt_regex=None):
