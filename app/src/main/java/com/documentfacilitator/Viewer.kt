@@ -180,7 +180,8 @@ class DocPane(private val act: ViewerActivity) : LinearLayout(act), Host {
             if (night) c.setNight(true)
             l.uri?.let { Store.addRecent(act, it, l.name) }
             Ui.log("opened ${l.name} as ${l.kind}")
-            setMode(if (fresh) Content.EDIT else Content.VIEW)
+            setMode(if (fresh) Content.EDIT else act.startMode)
+            Ui.log("ready ${l.kind} mode=${content?.mode}")
             refreshTitle()
             val auto = Store.states(act, key()).firstOrNull { it.auto }
             if (auto != null) AlertDialog.Builder(act).setMessage("Unsaved changes from your last session were kept for this document. Restore them?")
@@ -378,6 +379,8 @@ class ViewerActivity : Activity() {
     companion object {
         const val EXTRA_URIS = "uris"
         const val EXTRA_NEW = "new"
+        /** Optional start mode (0 view, 1 edit, 2 fill); used by automated tests and shortcuts. */
+        const val EXTRA_MODE = "mode"
     }
 
     private lateinit var root: LinearLayout
@@ -387,6 +390,7 @@ class ViewerActivity : Activity() {
     private var nextCode = 100
     private var split = 0.5f
     private var wideNow = false
+    val startMode: Int get() = intent.getIntExtra(EXTRA_MODE, 0).coerceIn(0, 2)
 
     override fun onCreate(b: Bundle?) {
         super.onCreate(b)
@@ -399,6 +403,7 @@ class ViewerActivity : Activity() {
         setContentView(root)
         val uris = ArrayList<Uri>()
         intent.getStringArrayListExtra(EXTRA_URIS)?.forEach { uris.add(Uri.parse(it)) }
+        if (uris.isEmpty()) intent.getStringArrayExtra(EXTRA_URIS)?.forEach { uris.add(Uri.parse(it)) }
         if (uris.isEmpty()) intent.data?.let { uris.add(it) }
         if (uris.isEmpty() && intent.action == Intent.ACTION_SEND) (intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM))?.let { uris.add(it) }
         val first = newPane()
