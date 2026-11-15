@@ -146,7 +146,7 @@ def wait_log(pattern, timeout=30):
     while time.time() < end:
         if rx.search(adb("logcat", "-d", "-s", "DocFacilitator", timeout=30)):
             return True
-        if "FATAL EXCEPTION" in logcat():
+        if re.search(r"Process: " + re.escape(PKG) + r", PID", logcat()):
             break
         time.sleep(1)
     raise AssertionError(f"log line never appeared: {pattern}")
@@ -154,9 +154,9 @@ def wait_log(pattern, timeout=30):
 
 def assert_no_crash():
     lc = logcat()
-    if "FATAL EXCEPTION" in lc:
-        i = lc.index("FATAL EXCEPTION")
-        raise AssertionError("app crashed:\n" + lc[i:i + 3000])
+    m = re.search(r"FATAL EXCEPTION.*\n.*Process: " + re.escape(PKG), lc)
+    if m:
+        raise AssertionError("app crashed:\n" + lc[m.start():m.start() + 3000])
     if not sh(f"pidof {PKG}").strip():
         raise AssertionError("app process is not running")
     txt = screen_text()
@@ -220,18 +220,20 @@ def system_save(before, ext):
 
 
 def system_pick(name):
-    """In the system 'open' screen: go to Downloads and choose the file."""
+    """In the system 'open' screen: search for the file by name and choose it."""
     time.sleep(2.5)
     try:
-        tap(by_text(name, timeout=4))
+        tap(find(lambda n: n.text == name, 3, name))
         return
     except AssertionError:
         pass
-    tap(find(lambda n: n.desc in ("Show roots", "Open navigation drawer"), 10, "roots button"))
-    tap_text("Downloads", timeout=10)
-    time.sleep(1.5)
-    shot("picker_downloads")
-    tap(by_text(name, timeout=15))
+    tap(find(lambda n: n.desc == "Search" or n.text == "Search", 10, "search button"))
+    time.sleep(1)
+    type_text(name.rsplit(".", 1)[0])
+    key(66)
+    time.sleep(2.5)
+    shot("picker_search")
+    tap(find(lambda n: n.text == name, 15, name))
 
 
 def export(fmt_regex=None):

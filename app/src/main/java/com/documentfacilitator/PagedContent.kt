@@ -58,6 +58,8 @@ class PagedContent(host: Host, doc: Loaded) : Content(host, doc) {
     private var image: Bitmap? = null
     private var pageW = FloatArray(0)
     private var pageH = FloatArray(0)
+    /** /Rotate of each PDF page; blank detection works on the upright page. */
+    private var pageRot = IntArray(0)
     private var failed: String? = null
 
     private val marks = ArrayList<Mark>()
@@ -113,6 +115,7 @@ class PagedContent(host: Host, doc: Loaded) : Content(host, doc) {
             val w: FloatArray
             val h: FloatArray
             var fields: List<FormField> = emptyList()
+            var rots = IntArray(0)
             if (isPdf) {
                 val fd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
                 pfd = fd
@@ -120,7 +123,7 @@ class PagedContent(host: Host, doc: Loaded) : Content(host, doc) {
                 renderer = r
                 w = FloatArray(r.pageCount); h = FloatArray(r.pageCount)
                 for (i in 0 until r.pageCount) r.openPage(i).use { p -> w[i] = p.width.toFloat(); h[i] = p.height.toFloat() }
-                try { PdfFile.open(file).use { fields = PdfEdit.fields(it) } } catch (t: Throwable) { Ui.log("form scan skipped: $t") }
+                try { PdfFile.open(file).use { pf -> fields = PdfEdit.fields(pf); rots = IntArray(pf.pages.size) { pf.pages[it].rotate } } } catch (t: Throwable) { Ui.log("form scan skipped: $t") }
             } else {
                 val bmp = Images.decodeFile(file, 3000) ?: throw java.io.IOException("unsupported image")
                 image = bmp
@@ -129,6 +132,7 @@ class PagedContent(host: Host, doc: Loaded) : Content(host, doc) {
             work = file
             Ui.ui {
                 pageW = w; pageH = h; acro = fields; failed = null
+                pageRot = if (rots.size == w.size) rots else IntArray(w.size)
                 blanks.clear(); detecting.clear(); waiters.clear()
                 scan = fields.isEmpty()
                 Ui.log("paged: ${doc.kind} pages=${w.size} formFields=${fields.size}")
@@ -392,14 +396,24 @@ class PagedContent(host: Host, doc: Loaded) : Content(host, doc) {
                 bmp.eraseColor(Color.WHITE)
                 val m = Matrix(); m.setScale(ppp, ppp)
                 renderInto(page, bmp, null, m)
-                val px = IntArray(w * h)
-                bmp.getPixels(px, 0, w, 0, 0, w, h)
-                bmp.recycle()
-                val lum = ByteArray(w * h)
+                // detect on the upright page (text horizontal), then map results back to the view
+                val rot = pageRot.getOrElse(page) { 0 }
+                val up = if (rot == 0) bmp else Bitmap.createBitmap(bmp, 0, 0, w, h, Matrix().apply { postRotate(-rot.toFloat()) }, false).also { bmp.recycle() }
+                val uw = up.width; val uh = up.height
+                val back = Matrix()
+                back.postRotate(rot.toFloat())
+                val ob = RectF(0f, 0f, uw.toFloat(), uh.toFloat()); back.mapRect(ob)
+                back.postTranslate(-ob.left, -ob.top)
+                val px = IntArray(uw * uh)
+                up.getPixels(px, 0, uw, 0, 0, uw, uh)
+                up.recycle()
+                val lum = ByteArray(uw * uh)
                 for (i in px.indices) { val c = px[i]; lum[i] = ((((c shr 16) and 0xff) * 3 + ((c shr 8) and 0xff) * 6 + (c and 0xff)) / 10).toByte() }
-                // for photos/scans the "point" used by the detector is an assumed 100-dpi-ish unit
                 val unit = if (isPdf) ppp else Math.max(w, h) / 1000f * (100f / 72f)
-                res = FieldDetector.detect(lum, w, h, unit).map { b ->
+                res = FieldDetector.detect(lum, uw, uh, unit).map { blank ->
+                    val r = RectF(blank.x.toFloat(), blank.y.toFloat(), (blank.x + blank.w).toFloat(), (blank.y + blank.h).toFloat())
+                    back.mapRect(r)
+                    val b = com.documentfacilitator.core.Blank(blank.kind, r.left.toInt(), r.top.toInt(), r.width().toInt(), r.height().toInt())
                     val type = when (b.kind) { Blank.CHECK -> FormField.CHECK; Blank.AREA -> AREA; else -> FormField.TEXT }
                     Slot("d$page:${b.x}:${b.y}", page, type, b.x / ppp, b.y / ppp, b.w / ppp, b.h / ppp, null)
                 }

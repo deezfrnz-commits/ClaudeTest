@@ -34,7 +34,12 @@ for f in $FX/*; do
     done
     sleep 2
     adb exec-out screencap -p > "$OUT/${n}_m$m.png"
-    crash=$(adb logcat -d | grep -A25 "FATAL EXCEPTION" | head -40)
+    crash=$(adb logcat -d | grep -A25 "FATAL EXCEPTION" | grep -A24 "Process: $PKG" | head -40)
+    # rotated copies of the flat form must yield the same blanks as the upright original
+    if [ $m -eq 2 ] && [ "${n#rot}" != "$n" ] && [ $ok -eq 1 ]; then
+      sleep 2
+      if ! adb logcat -d -s DocFacilitator | grep -q "fill: page 1 blanks=9"; then crash="rotated page: expected 9 blanks, got: $(adb logcat -d -s DocFacilitator | grep 'fill:')"; fi
+    fi
     alive=$(adb shell pidof $PKG)
     if [ -n "$crash" ] || [ -z "$alive" ] || [ $ok -ne 1 ]; then
       echo "FAIL $n mode=$m ready=$ok alive=${alive:-no}"; echo "$crash"
@@ -54,7 +59,7 @@ adb shell settings put system user_rotation 1
 adb shell am start -W -n $PKG/.ViewerActivity --esa uris "file://$DIR/form.pdf,file://$DIR/sample.docx" >/dev/null
 sleep 8
 adb exec-out screencap -p > $OUT/split.png
-if adb logcat -d | grep -q "FATAL EXCEPTION"; then echo "FAIL split"; adb logcat -d | grep -A25 "FATAL EXCEPTION"; fail=$((fail+1)); else echo "PASS split view"; fi
+if adb logcat -d | grep -q "Process: $PKG, PID"; then echo "FAIL split"; adb logcat -d | grep -A25 "FATAL EXCEPTION"; fail=$((fail+1)); else echo "PASS split view"; fi
 adb shell settings put system user_rotation 0
 echo "failures: $fail"
 exit $fail
