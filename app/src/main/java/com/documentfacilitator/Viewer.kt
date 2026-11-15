@@ -406,6 +406,7 @@ class ViewerActivity : Activity() {
         if (uris.isEmpty()) intent.getStringArrayExtra(EXTRA_URIS)?.forEach { uris.add(Uri.parse(it)) }
         if (uris.isEmpty()) intent.data?.let { uris.add(it) }
         if (uris.isEmpty() && intent.action == Intent.ACTION_SEND) (intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM))?.let { uris.add(it) }
+        Ui.log("viewer create ${System.identityHashCode(this)} uris=$uris restored=${b != null}")
         val first = newPane()
         val fresh = intent.getStringExtra(EXTRA_NEW)
         if (fresh != null) first.openNew(fresh)
@@ -421,6 +422,7 @@ class ViewerActivity : Activity() {
 
     /** Lays the panes out side by side on wide windows and stacked on tall ones, with a draggable divider. */
     private fun arrange() {
+        Ui.log("arrange panes=${panes.size}")
         root.removeAllViews()
         val cfg = resources.configuration
         val wide = cfg.screenWidthDp > cfg.screenHeightDp
@@ -452,7 +454,8 @@ class ViewerActivity : Activity() {
 
     fun addPane() {
         if (panes.size >= 2) return
-        pick { uri -> val p = newPane(); arrange(); p.open(uri) }
+        Ui.log("addPane: picking")
+        pick { uri -> Ui.log("addPane: got $uri"); val p = newPane(); arrange(); p.open(uri) }
     }
 
     fun closePane(p: DocPane) {
@@ -489,6 +492,7 @@ class ViewerActivity : Activity() {
 
     override fun onActivityResult(req: Int, res: Int, data: Intent?) {
         super.onActivityResult(req, res, data)
+        Ui.log("result req=$req res=$res known=${callbacks.containsKey(req)} activity=${System.identityHashCode(this)}")
         val cb = callbacks.remove(req) ?: return
         if (res == RESULT_OK) cb(data)
     }
@@ -513,6 +517,7 @@ class ViewerActivity : Activity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        Ui.log("viewer destroy ${System.identityHashCode(this)} finishing=$isFinishing")
         for (p in panes) p.close()
     }
 }

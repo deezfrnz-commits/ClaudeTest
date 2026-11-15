@@ -500,7 +500,8 @@ def main():
             results.append((t.__name__, False, str(e)))
             log(f"FAIL {t.__name__}: {e}")
             log("   screen: " + screen_text()[:600])
-            log("   app log: " + adb("logcat", "-d", "-s", "DocFacilitator", "AndroidRuntime")[-1500:])
+            log("   app log:\n" + adb("logcat", "-d", "-s", "DocFacilitator:I")[-2500:])
+            log("   tasks:\n" + "\n".join(l for l in sh("dumpsys activity activities").splitlines() if "documentfacilitator" in l)[:2000])
         sh(f"am force-stop {PKG}")
     log("")
     for name, ok, msg in results:
