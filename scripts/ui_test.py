@@ -233,7 +233,11 @@ def system_pick(name):
     key(66)
     time.sleep(2.5)
     shot("picker_search")
-    tap(find(lambda n: n.text == name, 15, name))
+    # a result row carries a "Preview the file <name>" button; the search box and the
+    # suggestion list show the same text, so tap the name on the row of that button
+    prev = find(lambda n: n.desc == "Preview the file " + name, 15, "search result " + name)
+    rows = [n for n in dump() if n.text == name and not n.cls.endswith("EditText") and abs(n.cy - prev.cy) < 150]
+    tap(rows[0] if rows else prev)
 
 
 def export(fmt_regex=None):
