@@ -45,6 +45,8 @@ jobs:
           sudo udevadm trigger --name-match=kvm
       - name: Build debug APK
         run: ./gradlew :app:assembleDebug --console=plain
+      - name: Install checkers for exported files
+        run: pip install pypdf python-docx openpyxl
       - name: Run on emulator (Android 14, Pixel 6)
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -54,7 +56,7 @@ jobs:
           profile: pixel_6
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          script: ./scripts/emulator-smoke.sh
+          script: ./scripts/emulator-smoke.sh; s=$?; python3 scripts/ui_test.py; u=$?; echo "smoke=$s ui=$u"; exit $((s + u))
       - uses: actions/upload-artifact@v4
         if: always()
         with:

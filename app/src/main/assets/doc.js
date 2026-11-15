@@ -7,7 +7,7 @@
   var orig = {};              // data-r id -> original text
   var counts = {};
   var isGrid = document.body.classList.contains('grid');
-  var host = window.DF || { dirty: function () {} };
+  var host = window.DF || { dirty: function () {}, ready: function () {} };
   var act = null;             // active grid cell
 
   function dirty() { try { host.dirty(); } catch (e) {} }
@@ -445,4 +445,5 @@
 
   recordOriginal();
   buildTabs();
+  try { host.ready(root.getElementsByTagName('*').length); } catch (e) {}
 })();

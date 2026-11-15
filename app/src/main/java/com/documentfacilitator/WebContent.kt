@@ -116,17 +116,19 @@ class WebContent(host: Host, doc: Loaded, private val prep: Prepared) : Content(
         web.addJavascriptInterface(object {
             @JavascriptInterface
             fun dirty() { Ui.ui { host.markDirty() } }
+            @JavascriptInterface
+            fun ready(n: Int) { Ui.log("web: dom ready ${doc.kind} nodes=$n") }
         }, "DF")
         web.webViewClient = object : WebViewClient() {
             override fun shouldInterceptRequest(view: WebView, req: WebResourceRequest): WebResourceResponse? {
                 val url = req.url.toString()
-                if (url == "https://df.local/") return null
-                if (url.startsWith(RES_BASE)) {
-                    val path = try { java.net.URLDecoder.decode(url.substring(RES_BASE.length).replace("+", "%2B"), "UTF-8") } catch (_: Exception) { "" }
-                    val ins = try { prep.zip?.stream(path) } catch (_: Exception) { null }
-                    if (ins != null) return WebResourceResponse(mimeOf(path), null, ins)
-                }
-                return WebResourceResponse("text/plain", "utf-8", 404, "Not found", HashMap(), ByteArrayInputStream(ByteArray(0)))
+                // The page itself (a data: URL under the df.local base) and anything that is not a
+                // document resource is left alone: network loads are blocked anyway.
+                if (req.isForMainFrame || !url.startsWith(RES_BASE)) return null
+                val path = try { java.net.URLDecoder.decode(url.substring(RES_BASE.length).replace("+", "%2B"), "UTF-8") } catch (_: Exception) { "" }
+                val ins = try { prep.zip?.stream(path) } catch (_: Exception) { null }
+                return if (ins != null) WebResourceResponse(mimeOf(path), null, ins)
+                else WebResourceResponse("text/plain", "utf-8", 404, "Not found", HashMap(), ByteArrayInputStream(ByteArray(0)))
             }
             override fun shouldOverrideUrlLoading(view: WebView, req: WebResourceRequest) = true
             override fun onPageFinished(view: WebView, url: String?) {
@@ -180,7 +182,14 @@ class WebContent(host: Host, doc: Loaded, private val prep: Prepared) : Content(
         return t
     }
 
+    /** Gives the page keyboard focus so typing goes into the field the page just focused. */
+    private fun focusPage() {
+        web.requestFocus()
+        (ctx.getSystemService(Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager).showSoftInput(web, 0)
+    }
+
     private fun step(d: Int) = js("dfApi.step($d)") { r ->
+        if ((r?.toIntOrNull() ?: 0) > 0) focusPage()
         when (r?.toIntOrNull() ?: 0) { 0 -> Ui.toast(ctx, "No fields found"); -1 -> Ui.toast(ctx, if (d > 0) "No more fields" else "No earlier fields") }
     }
 

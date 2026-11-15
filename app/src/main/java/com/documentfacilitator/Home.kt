@@ -15,6 +15,10 @@ import android.view.GestureDetector
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
+import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityNodeInfo
+import android.view.accessibility.AccessibilityNodeProvider
+import android.graphics.Rect
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.documentfacilitator.core.DocType
@@ -24,7 +28,44 @@ class HexGridView(c: Context) : View(c) {
     class Tile(val label: String, val sub: String?, val accent: Boolean, val onClick: () -> Unit, val onLong: (() -> Unit)? = null)
 
     var tiles: List<Tile> = emptyList()
-        set(v) { field = v; scroll = 0f; invalidate() }
+        set(v) { field = v; scroll = 0f; invalidate(); sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) }
+
+    /** Exposes every tile as a button for TalkBack and UI automation. */
+    private val a11y = object : AccessibilityNodeProvider() {
+        override fun createAccessibilityNodeInfo(id: Int): AccessibilityNodeInfo? {
+            if (id == View.NO_ID) {
+                val n = AccessibilityNodeInfo.obtain(this@HexGridView)
+                onInitializeAccessibilityNodeInfo(n)
+                for (i in tiles.indices) n.addChild(this@HexGridView, i)
+                return n
+            }
+            val t = tiles.getOrNull(id) ?: return null
+            val n = AccessibilityNodeInfo.obtain(this@HexGridView, id)
+            n.packageName = context.packageName
+            n.className = "android.widget.Button"
+            n.setParent(this@HexGridView)
+            n.contentDescription = if (t.sub != null) "${t.label} ${t.sub}" else t.label
+            n.text = t.label
+            n.isClickable = true; n.isLongClickable = t.onLong != null; n.isEnabled = true; n.isFocusable = true
+            n.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_CLICK)
+            val cx = cx(id / cols, id % cols); val cy = cy(id / cols)
+            val half = this@HexGridView.r * 0.8f
+            val b = Rect((cx - half).toInt(), (cy - half).toInt(), (cx + half).toInt(), (cy + half).toInt())
+            b.intersect(0, 0, width, height)
+            n.setBoundsInParent(b)
+            val loc = IntArray(2); getLocationOnScreen(loc)
+            n.setBoundsInScreen(Rect(b.left + loc[0], b.top + loc[1], b.right + loc[0], b.bottom + loc[1]))
+            n.isVisibleToUser = !b.isEmpty
+            return n
+        }
+        override fun performAction(id: Int, action: Int, args: android.os.Bundle?): Boolean {
+            if (id == View.NO_ID) return performAccessibilityAction(action, args)
+            if (action == AccessibilityNodeInfo.ACTION_CLICK) { tiles.getOrNull(id)?.onClick?.invoke(); return true }
+            return false
+        }
+    }
+
+    override fun getAccessibilityNodeProvider(): AccessibilityNodeProvider = a11y
 
     private val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
     private val line = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeWidth = Ui.dp(c, 1.5f).toFloat() }

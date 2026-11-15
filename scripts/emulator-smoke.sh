@@ -26,8 +26,9 @@ for f in $FX/*; do
     adb logcat -c
     adb shell am start -W -S -n $PKG/.ViewerActivity -d "file://$DIR/$n" --ei mode $m >/dev/null
     ok=0
+    case $n in *.pdf|*.png) need="ready .* mode=$m";; *) need="dom ready";; esac
     for i in $(seq 1 30); do
-      if adb logcat -d -s DocFacilitator | grep -q "ready .* mode=$m"; then ok=1; break; fi
+      if adb logcat -d -s DocFacilitator | grep -q "ready .* mode=$m" && adb logcat -d -s DocFacilitator | grep -q "$need"; then ok=1; break; fi
       if adb logcat -d | grep -q "FATAL EXCEPTION"; then break; fi
       sleep 1
     done
@@ -40,7 +41,7 @@ for f in $FX/*; do
       adb logcat -d -s DocFacilitator AndroidRuntime chromium | tail -30
       fail=$((fail+1))
     else
-      echo "PASS $n mode=$m :: $(adb logcat -d -s DocFacilitator | grep -E 'paged:|web:|text:|fill:' | head -3 | sed 's/.*DocFacilitator: //' | tr '\n' ' ')"
+      echo "PASS $n mode=$m :: $(adb logcat -d -s DocFacilitator | grep -E 'paged:|dom ready|text:|fill:' | head -3 | sed 's/.*DocFacilitator: //' | tr '\n' ' ')"
     fi
     adb logcat -d > "$OUT/${n}_m$m.log"
   done
