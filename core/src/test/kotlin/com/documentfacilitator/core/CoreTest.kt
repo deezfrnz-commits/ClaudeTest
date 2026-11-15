@@ -108,6 +108,7 @@ class CoreTest {
         assertEquals("lonely", grids[1].get(2, 2))
         val html = Grid.toHtml(grids)
         assertTrue(html.contains("data-f=\"=SUM(B2:B3)\""))
+        File(outDir, "xlsx.html").writeText(html)
 
         val paths = ZipDoc(src).use { z -> Xlsx.sheets(z).map { it.path } }
         val out = File(outDir, "patched.xlsx")
