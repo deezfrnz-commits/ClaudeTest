@@ -229,7 +229,7 @@ def system_pick(name):
         pass
     tap(find(lambda n: n.desc == "Search" or n.text == "Search", 10, "search button"))
     time.sleep(1)
-    type_text(name.rsplit(".", 1)[0])
+    type_text(name)
     key(66)
     time.sleep(2.5)
     shot("picker_search")
