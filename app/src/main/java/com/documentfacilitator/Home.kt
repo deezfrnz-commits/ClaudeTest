@@ -246,8 +246,11 @@ class HomeActivity : Activity() {
     }
 
     private fun open(uris: List<Uri>) {
-        val i = Intent(this, ViewerActivity::class.java)
+        // The first document is the intent's data, so Android keeps one window per document:
+        // reopening a document returns to its window, a different document gets its own.
+        val i = Intent(Intent.ACTION_VIEW, uris[0], this, ViewerActivity::class.java)
         i.putExtra(ViewerActivity.EXTRA_URIS, ArrayList(uris.map { it.toString() }))
+        i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
         startActivity(i)
     }
 
@@ -256,6 +259,7 @@ class HomeActivity : Activity() {
         Ui.choose(this, "New document", kinds.map { it.first }) { k ->
             val i = Intent(this, ViewerActivity::class.java)
             i.putExtra(ViewerActivity.EXTRA_NEW, kinds[k].second)
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
             startActivity(i)
         }
     }

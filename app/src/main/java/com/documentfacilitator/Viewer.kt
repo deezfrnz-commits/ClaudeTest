@@ -401,11 +401,7 @@ class ViewerActivity : Activity() {
             insets
         }
         setContentView(root)
-        val uris = ArrayList<Uri>()
-        intent.getStringArrayListExtra(EXTRA_URIS)?.forEach { uris.add(Uri.parse(it)) }
-        if (uris.isEmpty()) intent.getStringArrayExtra(EXTRA_URIS)?.forEach { uris.add(Uri.parse(it)) }
-        if (uris.isEmpty()) intent.data?.let { uris.add(it) }
-        if (uris.isEmpty() && intent.action == Intent.ACTION_SEND) (intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM))?.let { uris.add(it) }
+        val uris = urisOf(intent)
         Ui.log("viewer create ${System.identityHashCode(this)} uris=$uris restored=${b != null}")
         val first = newPane()
         val fresh = intent.getStringExtra(EXTRA_NEW)
@@ -415,6 +411,29 @@ class ViewerActivity : Activity() {
             if (uris.size > 1) newPane().open(uris[1])
         }
         arrange()
+    }
+
+    private fun urisOf(intent: Intent): List<Uri> {
+        val uris = ArrayList<Uri>()
+        intent.getStringArrayListExtra(EXTRA_URIS)?.forEach { uris.add(Uri.parse(it)) }
+        if (uris.isEmpty()) intent.getStringArrayExtra(EXTRA_URIS)?.forEach { uris.add(Uri.parse(it)) }
+        if (uris.isEmpty()) intent.data?.let { uris.add(it) }
+        if (uris.isEmpty() && intent.action == Intent.ACTION_SEND) (intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM))?.let { uris.add(it) }
+        return uris
+    }
+
+    /** This window was asked to show documents again: open any that are not already shown. */
+    override fun onNewIntent(i: Intent) {
+        super.onNewIntent(i)
+        val uris = urisOf(i)
+        Ui.log("viewer new intent uris=$uris")
+        if (uris.isEmpty()) return
+        setIntent(i)
+        val shown = panes.mapNotNull { it.doc?.uri }
+        val missing = uris.filter { it !in shown }
+        if (missing.isEmpty()) return
+        val p = panes[0]
+        p.guard { p.open(missing[0]) }
     }
 
     private fun newPane(): DocPane { val p = DocPane(this); panes.add(p); return p }

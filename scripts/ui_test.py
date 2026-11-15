@@ -468,6 +468,18 @@ def test_open_with_picker_and_split_view():
     assert len(views) == 2, f"expected two panes, found {len(views)}"
     assert_no_crash()
     log("   opened through the system picker; two documents side by side")
+    # a second document opened from home must show that document, not the earlier window
+    key(3)  # home button, app stays alive
+    sh(f"am start -W -n {PKG}/.HomeActivity")
+    time.sleep(2)
+    adb("logcat", "-c")
+    tap(find(lambda n: n.desc == "OPEN" or n.text == "OPEN", 10, "OPEN tile"))
+    system_pick("sample.rtf")
+    wait_log("dom ready RTF")
+    time.sleep(1.5)
+    by_text(r"^sample\.rtf", exact=False, timeout=10)
+    assert_no_crash()
+    log("   opening another document from home shows that document")
 
 
 def setup():
