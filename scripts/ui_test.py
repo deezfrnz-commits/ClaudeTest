@@ -245,16 +245,44 @@ def system_pick(name):
     # suggestion list show the same text, so tap the name on the row of that button
     prev = find(lambda n: n.desc == "Preview the file " + name, 15, "search result " + name)
     # tapping the thumbnail previews (opens the file in a viewer app); tap the row's middle to pick it
-    w = int(re.search(r"(\d+)x(\d+)", sh("wm size")).group(1))
     if "mInputShown=true" in sh("dumpsys input_method"):
-        back()  # close the search keyboard so the list takes the tap
-    time.sleep(1)
-    for _ in range(3):
-        row = [n for n in dump() if n.desc == "Preview the file " + name]
-        if not row:
-            return  # the picker closed: the file was chosen
-        tap(int(w * 0.6), row[0].cy)
-        time.sleep(2)
+        back()  # close the search keyboard so the list takes the input
+        time.sleep(1)
+
+    def still_open():
+        return any(n.desc == "Preview the file " + name for n in dump())
+
+    def on_name():
+        names = [n for n in dump() if n.text == name and not n.cls.endswith("EditText") and n.desc == ""]
+        rows = [n for n in names if n.y0 > 150]
+        if rows:
+            tap(rows[-1])
+
+    def keys():
+        key(20); key(20); key(66)
+
+    def long_then_select():
+        names = [n for n in dump() if n.text == name and not n.cls.endswith("EditText")]
+        if not names:
+            return
+        n = names[-1]
+        sh(f"input swipe {n.cx} {n.cy} {n.cx} {n.cy} 900")
+        time.sleep(1.5)
+        for label in ("Select", "SELECT", "Open", "OPEN", "Done"):
+            b = [m for m in dump() if m.text == label or m.desc == label]
+            if b:
+                tap(b[0])
+                return
+
+    for how, act in (("tap on name", on_name), ("keyboard", keys), ("long press + select", long_then_select)):
+        if not still_open():
+            return
+        act()
+        time.sleep(2.5)
+        if not still_open():
+            log(f"   picker accepted the file via {how}")
+            return
+        log(f"   picker ignored {how}; screen: " + screen_text()[:300])
     raise AssertionError("the file picker did not accept the selection")
 
 
@@ -430,11 +458,16 @@ def test_flat_pdf_detected_blanks():
 def test_docx_edit_and_fill():
     open_via_intent("sample.docx", 1)
     shot("docx_edit")
-    tail = by_text("Tail paragraph.")
-    tap(tail.x1 - 2, tail.cy)
-    key(123)
-    type_text(" Added by test")
-    time.sleep(1)
+    for attempt in range(3):
+        tail = by_text(r"^Tail paragraph\.", exact=False)
+        tap(tail.x1 - 2, tail.cy)
+        time.sleep(0.8)
+        key(123)
+        type_text(" Added by test")
+        time.sleep(1)
+        if any("Added by test" in n.text for n in dump()):
+            break
+        log("   typing did not reach the document, retrying")
     mode("FILL")
     time.sleep(1.5)
     tap_text("Next ▶")
