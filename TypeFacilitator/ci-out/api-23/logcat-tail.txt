@@ -1,0 +1,2 @@
+--------- beginning of main
+11-16 03:56:45.305  5257  5257 D         : HostConnection::get() New Host Connection established 0x7f0fc6952480, tid 5257

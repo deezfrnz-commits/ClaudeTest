@@ -1,0 +1,18 @@
+Android API 23: 11/17 checks passed
+PASS  install and enable  api 23, 42 keys, no internet permission
+FAIL  typing and auto-capitalise  auto-capitalised typing expected 'Hello world', got 'Kakx'
+FAIL  auto-correct and undo  no key for ' ' in layout None
+PASS  suggestions and punctuation  'Keyboard. Ok'
+PASS  next-word guess  'I am and '
+PASS  double space  'Go. '
+FAIL  shift and caps lock  shift and caps lock expected 'ABCd', got 'AbcD'
+PASS  symbols  '12@#€'
+PASS  long press  '3'
+FAIL  swipe typing  swiped word expected 'As ', got 'S'
+PASS  emoji and symbol catalog  typed '😀😃?'; first category has 100 emoji, category 4 has 61
+PASS  clipboard history  'Copy me Copy me'
+PASS  one-handed mode  q at x=51 full, 257 right, 41 left
+FAIL  floating keyboard  floating keyboard did not move: grip (539, 910) then (539, 910)
+PASS  landscape  'Wide'
+PASS  settings, theme, number row  'A1'
+FAIL  release build  typing on the release build expected 'Hi there', got 'Bjfbsds'
