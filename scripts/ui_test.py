@@ -238,7 +238,8 @@ def system_pick(name):
     prev = find(lambda n: n.desc == "Preview the file " + name, 15, "search result " + name)
     # tapping the thumbnail previews (opens the file in a viewer app); tap the row's middle to pick it
     w = int(re.search(r"(\d+)x(\d+)", sh("wm size")).group(1))
-    back()  # close the search keyboard so the list takes the tap
+    if "mInputShown=true" in sh("dumpsys input_method"):
+        back()  # close the search keyboard so the list takes the tap
     time.sleep(1)
     for _ in range(3):
         row = [n for n in dump() if n.desc == "Preview the file " + name]
