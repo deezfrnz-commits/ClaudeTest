@@ -1,0 +1,82 @@
+--------- beginning of main
+11-16 03:59:28.868  1424  3319 I HeterodyneSyncer: Removed 0 invalid users [CONTEXT service_id=51 ]
+11-16 03:59:28.875  1833  2282 W A       : Fetch failed. Renderable stream failure reason: USER_SIGNED_OUT
+11-16 03:59:28.875  1833  2282 W A       : DiscoverPrecheckException(precheckFailureReason=com.google.android.apps.search.googleapp.discover.w.a.c@421f432)
+11-16 03:59:28.875  1833  2282 W A       : 	at com.google.android.apps.search.googleapp.discover.w.bb.d(PG:16)
+11-16 03:59:28.875  1833  2282 W A       : 	at com.google.android.apps.search.googleapp.discover.w.ax.invokeSuspend(PG:5)
+11-16 03:59:28.875  1833  2282 W A       : 	at com.google.android.apps.search.googleapp.discover.w.ax.invoke(PG:1)
+11-16 03:59:28.875  1833  2282 W A       : 	at kotlinx.coroutines.f.b.a(PG:1)
+11-16 03:59:28.875  1833  2282 W A       : 	at kotlinx.coroutines.m.a(PG:11)
+11-16 03:59:28.875  1833  2282 W A       : 	at com.google.android.apps.search.googleapp.discover.w.bb.c(PG:2)
+11-16 03:59:28.875  1833  2282 W A       : 	at com.google.android.apps.search.googleapp.discover.v.am.invokeSuspend(PG:5)
+11-16 03:59:28.875  1833  2282 W A       : 	at com.google.android.apps.search.googleapp.discover.v.am.invoke(PG:1)
+11-16 03:59:28.875  1833  2282 W A       : 	at kotlinx.coroutines.f.b.a(PG:1)
+11-16 03:59:28.875  1833  2282 W A       : 	at kotlinx.coroutines.m.a(PG:11)
+11-16 03:59:28.875  1833  2282 W A       : 	at com.google.android.apps.search.googleapp.discover.v.al.invokeSuspend(PG:4)
+11-16 03:59:28.875  1833  2282 W A       : 	at i.c.b.a.a.resumeWith(PG:4)
+11-16 03:59:28.875  1833  2282 W A       : 	at kotlinx.coroutines.bk.run(PG:14)
+11-16 03:59:28.875  1833  2282 W A       : 	at com.google.apps.tiktok.coroutines.f.run(PG:1)
+11-16 03:59:28.875  1833  2282 W A       : 	at com.google.android.libraries.i.ae.run(PG:1)
+11-16 03:59:28.875  1833  2282 W A       : 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+11-16 03:59:28.875  1833  2282 W A       : 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+11-16 03:59:28.875  1833  2282 W A       : 	at com.google.android.libraries.i.k.run(PG:2)
+11-16 03:59:28.875  1833  2282 W A       : 	at com.google.android.libraries.i.p.run(PG:4)
+11-16 03:59:28.875  1833  2282 W A       : 	at java.lang.Thread.run(Thread.java:1012)
+11-16 03:59:28.923  1057  1057 W FeatureConnection: getRegistrationTech: ImsRegistration is null
+11-16 03:59:28.923  1032  1359 I HeadsetPhoneState: stopListenForPhoneState(), no listener indicates nothing is listening
+11-16 03:59:28.923  1032  1359 W HeadsetPhoneState: startListenForPhoneState, no event to listen
+11-16 03:59:28.924  1057  1057 I Telephony: Carrier-config changed, checking for phone account updates.
+11-16 03:59:28.924  1057  1057 D Telephony: TelecomAccountRegistry: handleCarrierConfigChange: subId=1, accountSubId=1
+11-16 03:59:28.924  1057  1057 D Telephony: isEmergencyPreferredAccount: subId=1, activeData=1
+11-16 03:59:28.924  1057  1057 D Telephony: isEmergencyPreferredAccount: Device does not require preference.
+11-16 03:59:28.924  1057  1057 W Telephony: registerMmTelCapabilityCallback: registration failed, no ImsService available. Exception: code: 1
+11-16 03:59:28.925  1057  1057 I Telephony: isRttCurrentlySupported -- regular acct, hasVoiceAvailability: false
+11-16 03:59:28.925  1057  1057 I Telephony:  isRttSupported: false
+11-16 03:59:28.925  1057  1057 I Telephony:  alwaysAllowWhileRoaming: false
+11-16 03:59:28.925  1057  1057 I Telephony:  isRoaming: false
+11-16 03:59:28.925  1057  1057 I Telephony:  isOnWfc: false
+11-16 03:59:28.925  1424  3296 I HeterodyneSyncScheduler: Scheduling Phenotype for a PhenotypeSyncImmediately(6, com.google.android.libraries.consentverifier#com.google.android.gm) one off with window [1, 2] in seconds [CONTEXT service_id=51 ]
+11-16 03:59:28.940  1484  3635 W ProviderHelper: Unknown dynamite feature providerinstaller.dynamite
+11-16 03:59:28.940  1484  3635 I DynamiteModule: Considering local module com.google.android.gms.providerinstaller.dynamite:1 and remote module com.google.android.gms.providerinstaller.dynamite:0
+11-16 03:59:28.940  1484  3635 I DynamiteModule: Selected local version of com.google.android.gms.providerinstaller.dynamite
+--------- beginning of system
+11-16 03:59:28.954   522  1805 D CompatibilityChangeReporter: Compat change id reported: 168419799; UID 1000; state: DISABLED
+11-16 03:59:28.954   522  1805 D CompatibilityChangeReporter: Compat change id reported: 273564678; UID 1000; state: DISABLED
+11-16 03:59:28.977  1057  1057 I Telephony: reRegisterPstnPhoneAccount: subId: 1 - no change
+11-16 03:59:28.995  1484  3262 W SQLiteLog: (28) double-quoted string literal: "1794628768994"
+11-16 03:59:28.999  1484  3262 W SQLiteLog: (28) double-quoted string literal: "1"
+11-16 03:59:29.007  1833  2282 W NamedFutures: Timeout future task has been cancelled: 10000 milliseconds
+11-16 03:59:29.010  1833  1833 W A       : Failed RenderableStream callback; SubscriptionCallbacks#onError(Throwable) called.
+11-16 03:59:29.010  1833  1833 W A       : com.google.android.apps.search.googleapp.discover.v.i: DiscoverPrecheckException(precheckFailureReason=com.google.android.apps.search.googleapp.discover.w.a.c@421f432)
+11-16 03:59:29.010  1833  1833 W A       : 	at com.google.android.apps.search.googleapp.discover.v.ak.a(PG:1)
+11-16 03:59:29.010  1833  1833 W A       : 	at com.google.android.apps.search.googleapp.discover.v.am.invokeSuspend(PG:17)
+11-16 03:59:29.010  1833  1833 W A       : 	at i.c.b.a.a.resumeWith(PG:4)
+11-16 03:59:29.010  1833  1833 W A       : 	at kotlinx.coroutines.bk.run(PG:14)
+11-16 03:59:29.010  1833  1833 W A       : 	at com.google.apps.tiktok.coroutines.f.run(PG:1)
+11-16 03:59:29.010  1833  1833 W A       : 	at com.google.android.libraries.i.ae.run(PG:1)
+11-16 03:59:29.010  1833  1833 W A       : 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+11-16 03:59:29.010  1833  1833 W A       : 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+11-16 03:59:29.010  1833  1833 W A       : 	at com.google.android.libraries.i.k.run(PG:2)
+11-16 03:59:29.010  1833  1833 W A       : 	at com.google.android.libraries.i.p.run(PG:4)
+11-16 03:59:29.010  1833  1833 W A       : 	at java.lang.Thread.run(Thread.java:1012)
+11-16 03:59:29.010  1833  1833 W A       : Caused by: DiscoverPrecheckException(precheckFailureReason=com.google.android.apps.search.googleapp.discover.w.a.c@421f432)
+11-16 03:59:29.010  1833  1833 W A       : 	at com.google.android.apps.search.googleapp.discover.w.bb.d(PG:16)
+11-16 03:59:29.010  1833  1833 W A       : 	at com.google.android.apps.search.googleapp.discover.w.ax.invokeSuspend(PG:5)
+11-16 03:59:29.010  1833  1833 W A       : 	at com.google.android.apps.search.googleapp.discover.w.ax.invoke(PG:1)
+11-16 03:59:29.010  1833  1833 W A       : 	at kotlinx.coroutines.f.b.a(PG:1)
+11-16 03:59:29.010  1833  1833 W A       : 	at kotlinx.coroutines.m.a(PG:11)
+11-16 03:59:29.010  1833  1833 W A       : 	at com.google.android.apps.search.googleapp.discover.w.bb.c(PG:2)
+11-16 03:59:29.010  1833  1833 W A       : 	at com.google.android.apps.search.googleapp.discover.v.am.invokeSuspend(PG:5)
+11-16 03:59:29.010  1833  1833 W A       : 	at com.google.android.apps.search.googleapp.discover.v.am.invoke(PG:1)
+11-16 03:59:29.010  1833  1833 W A       : 	at kotlinx.coroutines.f.b.a(PG:1)
+11-16 03:59:29.010  1833  1833 W A       : 	at kotlinx.coroutines.m.a(PG:11)
+11-16 03:59:29.010  1833  1833 W A       : 	at com.google.android.apps.search.googleapp.discover.v.al.invokeSuspend(PG:4)
+11-16 03:59:29.010  1833  1833 W A       : 	... 9 more
+11-16 03:59:29.010  1833  2214 I GsaConfigFlagsSyncer: Flag sync cancelled.
+11-16 03:59:29.024  1833  1833 W FontsContract: Platform version of downloadable fonts is deprecated. Please use androidx version instead.
+11-16 03:59:29.040  1110  1813 D EGL_emulation: app_time_stats: avg=1488.34ms min=1488.34ms max=1488.34ms count=1
+11-16 03:59:29.040  1424  3292 I NearbyMediums: BluetoothAdapter's name was not set by Nearby Connections, ignoring call to restore default scan mode. [CONTEXT service_id=54 ]
+11-16 03:59:29.048  3115  3213 I DialerConversationHistoryCoalescer: com.android.dialer.calllog.coalescer.ConversationHistoryCoalescer.coalesceInternal:125 coalesceInternal
+11-16 03:59:29.049  1424  3292 I NearbyMediums: BluetoothAdapter's name was not set by Nearby Connections, ignoring call to restore device name [CONTEXT service_id=54 ]
+--------- beginning of kernel
+11-16 03:59:29.285     0     0 I logd    : logdr: UID=2000 GID=2000 PID=3691 n tail=0 logMask=99 pid=0 start=0ns deadline=0ns
