@@ -148,11 +148,11 @@ class HexGridView(c: Context) : View(c) {
                     canvas.drawPath(path, line)
                     continue
                 }
-                fill.color = if (i == pressed) Ui.LINE else Ui.SURFACE
+                fill.color = if (i == pressed) Ui.HEX_LINE else Ui.HEX_FILL
                 canvas.drawPath(path, fill)
-                line.color = if (tile.accent) Ui.ACCENT else Ui.LINE
+                line.color = if (tile.accent) Ui.HEX_ACCENT else Ui.HEX_LINE
                 canvas.drawPath(path, line)
-                big.color = if (tile.accent) Ui.ACCENT else Ui.TEXT
+                big.color = if (tile.accent) Ui.HEX_ACCENT else Ui.onColor(Ui.HEX_FILL)
                 val maxW = colW() * 0.78f
                 if (tile.sub == null) {
                     canvas.drawText(TextUtils.ellipsize(tile.label, big, maxW, TextUtils.TruncateAt.END).toString(), x, y + big.textSize * 0.35f, big)
@@ -182,6 +182,7 @@ class HomeActivity : Activity() {
 
     override fun onCreate(b: Bundle?) {
         super.onCreate(b)
+        Ui.loadHexColors(this)
         val root = LinearLayout(this)
         root.orientation = LinearLayout.VERTICAL
         root.setBackgroundColor(Ui.BG)
@@ -214,6 +215,7 @@ class HomeActivity : Activity() {
         t.add(HexGridView.Tile("SPLIT", "two documents", true, { pick(true) }))
         t.add(HexGridView.Tile("NEW", null, true, { newDoc() }))
         t.add(HexGridView.Tile("STATES", "saved versions", true, { states() }))
+        t.add(HexGridView.Tile("COLOURS", "hexagons", true, { colours() }))
         for (r in Store.recents(this)) {
             t.add(HexGridView.Tile(DocType.fromName(r.name).label, r.name, false, { open(listOf(Uri.parse(r.uri))) }, {
                 Ui.confirm(this, "Remove \"${r.name}\" from recent documents?", "Remove") { Store.removeRecent(this, r.uri); refresh() }
@@ -261,6 +263,29 @@ class HomeActivity : Activity() {
             i.putExtra(ViewerActivity.EXTRA_NEW, kinds[k].second)
             i.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
             startActivity(i)
+        }
+    }
+
+    /** Lets the user pick the hexagon fill, outline and highlight colours. */
+    private fun colours() {
+        val parts = listOf("Hexagon fill", "Hexagon outline", "Highlight (buttons, selected mode)", "Reset to default")
+        Ui.choose(this, "Hexagon colours", parts) { which ->
+            if (which == 3) {
+                Ui.HEX_FILL = Ui.SURFACE; Ui.HEX_LINE = Ui.LINE; Ui.HEX_ACCENT = Ui.ACCENT
+                Ui.saveHexColors(this); grid.invalidate(); return@choose
+            }
+            val names = Ui.hexPresets.map { it.first } + "Custom (#RRGGBB)\u2026"
+            Ui.choose(this, parts[which], names) { k ->
+                fun apply(c: Int) {
+                    when (which) { 0 -> Ui.HEX_FILL = c; 1 -> Ui.HEX_LINE = c; else -> Ui.HEX_ACCENT = c }
+                    Ui.saveHexColors(this); grid.invalidate()
+                }
+                if (k < Ui.hexPresets.size) apply(Ui.hexPresets[k].second)
+                else Ui.prompt(this, "Colour code", "#", hint = "#C0C0C0") { v ->
+                    val c = try { android.graphics.Color.parseColor(v.trim()) } catch (_: Exception) { null }
+                    if (c == null) Ui.toast(this, "Use the form #RRGGBB") else apply(c or 0xFF000000.toInt())
+                }
+            }
         }
     }
 

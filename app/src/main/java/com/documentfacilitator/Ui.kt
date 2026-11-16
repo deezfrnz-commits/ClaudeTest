@@ -32,6 +32,35 @@ object Ui {
     const val ACCENT = 0xFFF2B33D.toInt()
     const val TAG = "DocFacilitator"
 
+    /** Hexagon colours (home tiles and mode buttons). User-customisable, see [loadHexColors]. */
+    var HEX_FILL = SURFACE
+    var HEX_LINE = LINE
+    var HEX_ACCENT = ACCENT
+
+    val hexPresets = listOf(
+        "Graphite" to SURFACE, "Black" to 0xFF000000.toInt(), "Navy" to 0xFF14213D.toInt(), "Forest" to 0xFF16301F.toInt(),
+        "Wine" to 0xFF3A1218.toInt(), "Silver" to 0xFFC0C0C0.toInt(), "Slate" to LINE, "White" to 0xFFFFFFFF.toInt(),
+        "Red" to 0xFFE00000.toInt(), "Amber" to ACCENT, "Blue" to 0xFF2F80ED.toInt(), "Green" to 0xFF27AE60.toInt(),
+        "Purple" to 0xFF8E44AD.toInt()
+    )
+
+    fun loadHexColors(c: Context) {
+        val p = c.getSharedPreferences("df", 0)
+        HEX_FILL = p.getInt("hex_fill", SURFACE)
+        HEX_LINE = p.getInt("hex_line", LINE)
+        HEX_ACCENT = p.getInt("hex_accent", ACCENT)
+    }
+
+    fun saveHexColors(c: Context) {
+        c.getSharedPreferences("df", 0).edit().putInt("hex_fill", HEX_FILL).putInt("hex_line", HEX_LINE).putInt("hex_accent", HEX_ACCENT).apply()
+    }
+
+    /** Readable text colour on top of [bg]. */
+    fun onColor(bg: Int): Int {
+        val l = (((bg shr 16) and 0xff) * 3 + ((bg shr 8) and 0xff) * 6 + (bg and 0xff)) / 10
+        return if (l > 150) BG else TEXT
+    }
+
     private val main = Handler(Looper.getMainLooper())
     private val pool = Executors.newSingleThreadExecutor()
 
@@ -88,8 +117,8 @@ object Ui {
         t.textSize = 11f
         t.typeface = Typeface.DEFAULT_BOLD
         t.gravity = Gravity.CENTER
-        t.setTextColor(TEXT)
-        t.background = HexDrawable(SURFACE, LINE, dp(c, 1.5f).toFloat())
+        t.setTextColor(onColor(HEX_FILL))
+        t.background = HexDrawable(HEX_FILL, HEX_LINE, dp(c, 1.5f).toFloat())
         t.layoutParams = ViewGroup.MarginLayoutParams(dp(c, 58f), dp(c, 34f)).also { it.leftMargin = dp(c, 2f) }
         t.setOnClickListener { onClick() }
         return t
@@ -97,9 +126,9 @@ object Ui {
 
     fun setHexSelected(t: TextView, on: Boolean) {
         val d = t.background as? HexDrawable ?: return
-        d.fill = if (on) ACCENT else SURFACE
-        d.stroke = if (on) ACCENT else LINE
-        t.setTextColor(if (on) BG else TEXT)
+        d.fill = if (on) HEX_ACCENT else HEX_FILL
+        d.stroke = if (on) HEX_ACCENT else HEX_LINE
+        t.setTextColor(onColor(if (on) HEX_ACCENT else HEX_FILL))
         t.invalidate()
     }
 

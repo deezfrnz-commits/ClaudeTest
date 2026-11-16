@@ -394,6 +394,7 @@ class ViewerActivity : Activity() {
 
     override fun onCreate(b: Bundle?) {
         super.onCreate(b)
+        Ui.loadHexColors(this)
         root = LinearLayout(this)
         root.setBackgroundColor(Ui.BG)
         root.setOnApplyWindowInsetsListener { v, insets ->
