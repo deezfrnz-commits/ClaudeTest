@@ -211,6 +211,8 @@ def t_setup():
     m = keymap("letters", need="q", timeout=20)
     if "q" not in m:
         raise RuntimeError("keyboard did not appear: " + str(m)[:300])
+    time.sleep(2.5)  # positions are logged again once the keyboard has settled
+    m = keymap("letters", need="q")
     shot("keyboard")
     return f"api {API}, {len(m)} keys, no internet permission"
 
@@ -269,7 +271,9 @@ def t_double_space():
 def t_shift_caps():
     clear_field()
     type_keys("a")
-    press("SHIFT"); press("SHIFT")  # double tap = caps lock
+    x, y = keymap("letters", need="SHIFT")["SHIFT"]
+    sh(f"input swipe {x} {y} {x} {y} 800")  # hold shift = caps lock (so is a double tap)
+    time.sleep(0.4)
     type_keys("bc")
     press("SHIFT")
     type_keys("d")
@@ -412,6 +416,15 @@ def t_one_handed():
 
 
 def t_floating():
+    try:
+        return floating_checks()
+    finally:
+        if "GRIP" in keymap():
+            toolbar("TB_FLOAT")
+            time.sleep(1)
+
+
+def floating_checks():
     toolbar("TB_FLOAT")
     m = keymap("letters", need="GRIP")
     if "GRIP" not in m:
@@ -422,7 +435,7 @@ def t_floating():
     expect(text(), "Float", "typing on the floating keyboard")
     gx, gy = m["GRIP"]
     sh(f"input swipe {gx} {gy} {gx - 60} {gy - 500} 800")
-    time.sleep(1)
+    time.sleep(1.5)
     m2 = keymap("letters", need="GRIP")
     shot("floating_moved")
     if not m2["GRIP"][1] < gy - 200:
@@ -431,7 +444,7 @@ def t_floating():
     expect(text(), "Floats", "typing after moving")
     rx, ry = m2["RESIZE"]
     sh(f"input swipe {rx} {ry} {rx - 200} {ry} 600")
-    time.sleep(1)
+    time.sleep(1.5)
     m3 = keymap("letters", need="GRIP")
     shot("floating_resized")
     toolbar("TB_FLOAT")

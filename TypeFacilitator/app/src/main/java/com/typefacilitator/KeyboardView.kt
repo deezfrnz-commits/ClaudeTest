@@ -438,6 +438,7 @@ class KeyboardView(ctx: Context, private val prefs: Prefs, private val listener:
             val k = p.key
             if (p.sugg >= 0) { val i = p.sugg; p.sugg = -1; p.fired = true; listener.onForget(i); invalidate() }
             else if (k != null && p.mode == 0 && !p.fired && k.alts.isNotEmpty()) openPopup(k, p)
+            else if (k != null && p.mode == 0 && !p.fired && k.code == K.SHIFT) { p.fired = true; listener.onPress(0); listener.onKey(K.CAPS, ""); invalidate() }
         }
         p.longPress = r
         handler.postDelayed(r, prefs.longPress.toLong())
@@ -546,16 +547,17 @@ class KeyboardView(ctx: Context, private val prefs: Prefs, private val listener:
             cancelLong(p); p.mode = 2; p.lastX = x; p.fired = true; listener.onPress(0); return
         }
         if (k.code == K.DEL || k.code == K.SPACE || stripKeys.contains(k)) return
-        if (k.isLetter && prefs.swipe && swipeAllowed && ptrs.size() == 1 && layout.name == "letters" && dist > kw * 0.6f) {
-            val under = keyAt(x, y)
-            if (under != null && under !== k && under.isLetter) {
+        val under = keyAt(x, y)
+        if (k.isLetter && prefs.swipe && swipeAllowed && ptrs.size() == 1 && layout.name == "letters") {
+            // on the letters a moving finger is a swipe as soon as it reaches another letter
+            if (under != null && under !== k && under.isLetter && dist > kw * 0.4f) {
                 cancelLong(p); p.mode = 1; swiping = true
                 sx[0] = p.x0; sy[0] = p.y0; sx[1] = x; sy[1] = y; sn = 2
                 invalidate(); return
             }
+            if (under == null || under.isLetter) return
         }
         // sliding off a key before lifting moves the press to the key now under the finger
-        val under = keyAt(x, y)
         if (under != null && under !== k && dist > kw * 0.5f && !sideKeys.contains(k)) {
             p.key = under; p.x0 = x; p.y0 = y
             startLong(p, 0)

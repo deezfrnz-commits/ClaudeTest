@@ -149,6 +149,7 @@ class TfService : InputMethodService(), KeyboardView.Listener, GridPanel.Listene
         updateShift()
         updateStrip()
         readClipboard()
+        k.postDelayed({ k.dumpKeys() }, 900)
     }
 
     override fun onFinishInputView(finishingInput: Boolean) {
@@ -235,6 +236,7 @@ class TfService : InputMethodService(), KeyboardView.Listener, GridPanel.Listene
             dragX = Int.MIN_VALUE
             prefs.sp.edit().putInt("floatX", lp.leftMargin).putInt("floatY", lp.topMargin).apply()
             prefs.load()
+            kv?.let { v -> v.postDelayed({ v.dumpKeys() }, 300) }
         }
     }
 
@@ -250,6 +252,7 @@ class TfService : InputMethodService(), KeyboardView.Listener, GridPanel.Listene
             dragX = Int.MIN_VALUE
             val land = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
             prefs.set("floatW", (lp.width * 100f / sw / (if (land) 0.6f else 1f)).toInt().coerceIn(45, 100))
+            kv?.let { v -> v.postDelayed({ v.dumpKeys() }, 300) }
         }
     }
 
@@ -355,6 +358,7 @@ class TfService : InputMethodService(), KeyboardView.Listener, GridPanel.Listene
                 k.shift = shift
                 if (stripKind == 2) updateStrip()
             }
+            K.CAPS -> { shift = 2; manualShift = true; k.shift = 2 }
             K.DEL -> backspace()
             K.ENTER -> enter()
             K.SPACE -> space()

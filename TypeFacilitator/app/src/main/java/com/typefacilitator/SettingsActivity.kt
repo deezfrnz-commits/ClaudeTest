@@ -148,8 +148,12 @@ class SettingsActivity : Activity() {
     private fun rebuild() { list.removeAllViews(); build() }
 
     private fun updateStatus() {
-        val enabled = (Settings.Secure.getString(contentResolver, Settings.Secure.ENABLED_INPUT_METHODS) ?: "").contains(packageName)
-        val current = (Settings.Secure.getString(contentResolver, Settings.Secure.DEFAULT_INPUT_METHOD) ?: "").startsWith(packageName)
+        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        val enabled = try { imm.enabledInputMethodList.any { it.packageName == packageName } } catch (_: Exception) { false }
+        val current = try {
+            if (android.os.Build.VERSION.SDK_INT >= 34) imm.currentInputMethodInfo?.packageName == packageName
+            else (Settings.Secure.getString(contentResolver, Settings.Secure.DEFAULT_INPUT_METHOD) ?: "").startsWith("$packageName/")
+        } catch (_: Exception) { false }
         status?.text = when {
             current -> "TypeFacilitator is your keyboard. Tap the field above to try it."
             enabled -> "Turned on. Now do step 2 to start using it."

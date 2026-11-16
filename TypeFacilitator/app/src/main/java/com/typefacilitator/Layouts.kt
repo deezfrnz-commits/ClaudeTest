@@ -28,7 +28,7 @@ object K {
     const val TB_TOGGLE = -30; const val TB_CLIP = -31; const val TB_EMOJI = -32; const val TB_EDIT = -33
     const val TB_ONEHAND = -34; const val TB_FLOAT = -35; const val TB_SETTINGS = -36; const val TB_HIDE = -37
     const val FL_MOVE = -40; const val FL_RESIZE = -41; const val OH_SWITCH = -42; const val OH_EXIT = -43
-    const val SYMBOLS = -44
+    const val SYMBOLS = -44; const val CAPS = -45
     const val SPACE = 32
 }
 
