@@ -192,6 +192,18 @@ def expect(got, want, what=""):
     return repr(got)
 
 
+def enable_ime():
+    """Turns the keyboard on and selects it; Android needs a moment after install to list it."""
+    out = ""
+    for _ in range(15):
+        out = sh(f"ime enable {IME}") + sh(f"ime set {IME}")
+        cur = sh("settings get secure default_input_method").strip()
+        if cur == IME or cur.endswith("/com.typefacilitator.TfService"):
+            return
+        time.sleep(2)
+    raise RuntimeError(f"could not select the keyboard: {out.strip()} / known: {sh('ime list -a -s').strip()}")
+
+
 # ------------------------------------------------------------------ tests
 def t_setup():
     out = adb("install", "-r", DEBUG_APK)
@@ -200,8 +212,7 @@ def t_setup():
     perms = sh(f"dumpsys package {PKG} | grep -i 'android.permission' | sort -u")
     if "INTERNET" in perms:
         raise RuntimeError("APK asks for internet access: " + perms)
-    sh(f"ime enable {IME}")
-    sh(f"ime set {IME}")
+    enable_ime()
     sh("settings put secure show_ime_with_hard_keyboard 1")
     adb("logcat", "-c")
     sh(f"am start -W -n {PKG}/.SettingsActivity")
@@ -522,7 +533,7 @@ def t_release():
     out = adb("uninstall", PKG) + adb("install", "-r", RELEASE_APK)
     if "Success" not in out:
         raise RuntimeError("release install failed: " + out)
-    sh(f"ime enable {IME}"); sh(f"ime set {IME}")
+    enable_ime()
     adb("logcat", "-c")
     sh(f"am start -W -n {PKG}/.SettingsActivity")
     time.sleep(3)
