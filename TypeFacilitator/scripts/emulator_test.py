@@ -177,8 +177,10 @@ def check(name, fn):
         results.append((name, True, detail or ""))
         log(f"PASS {name} {detail or ''}")
     except Exception as e:
-        results.append((name, False, str(e)))
-        log(f"FAIL {name}: {e}")
+        c = crashed()
+        msg = str(e) + ("\nCRASH:\n" + c if c and c not in str(e) else "")
+        results.append((name, False, msg))
+        log(f"FAIL {name}: {msg}")
         traceback.print_exc()
         shot("FAIL_" + name)
         adb("logcat", "-c")
@@ -528,7 +530,10 @@ first_map = {}
 def main():
     check("install and enable", t_setup)
     if not results[-1][1]:
-        log(adb("logcat", "-d")[-6000:])
+        with open(f"{OUT}/logcat.txt", "w") as f:
+            f.write(adb("logcat", "-d"))
+        with open(f"{OUT}/report.txt", "w") as f:
+            f.write(f"Android API {API}: could not start\nFAIL  {results[-1][0]}  {results[-1][2]}\n")
         return 1
     first_map.update(keymap("letters", need="q"))
     for name, fn in [
