@@ -79,10 +79,18 @@ def dump():
         out = sh("uiautomator dump /sdcard/ui.xml >/dev/null 2>&1; cat /sdcard/ui.xml")
         if out.strip().startswith("<?xml"):
             try:
-                root = ET.fromstring(out)
-                return [Node(e) for e in root.iter("node")]
+                nodes = [Node(e) for e in ET.fromstring(out).iter("node")]
             except ET.ParseError:
-                pass
+                nodes = None
+            if nodes is not None:
+                # a slow emulator sometimes shows "<other app> isn't responding" over everything
+                anr = [n for n in nodes if "isn't responding" in n.text and PKG not in n.text and "DocumentFacilitator" not in n.text]
+                wait = [n for n in nodes if n.text == "Wait"]
+                if anr and wait:
+                    log("   (dismissed system dialog: " + anr[0].text + ")")
+                    tap(wait[0])
+                    continue
+                return nodes
         time.sleep(1)
     return []
 
